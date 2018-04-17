@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
+import Html.Keyed
 import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline as Pipeline
@@ -16,7 +17,7 @@ type alias Item =
     , points : Maybe Int
     , user : Maybe String
     , time : Int
-    , time_ago : String
+    , timeAgo : String
     , comments_count : Int
     , itemType : String
     , url : String
@@ -69,7 +70,7 @@ decodeItem =
         |> Pipeline.required "comments_count" Decode.int
         |> Pipeline.required "type" Decode.string
         |> Pipeline.required "url" Decode.string
-        |> Pipeline.required "domain" Decode.string
+        |> Pipeline.optional "domain" Decode.string "https://news.ycombinator.com"
 
 
 
@@ -101,24 +102,44 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        ([ h1 [] [ text "Your Elm App is working!" ]
-         , if model.error == "" then
+        [ h1 [] [ text "Your Elm App is working!" ]
+        , if model.error == "" then
             text ""
-           else
+          else
             div [ class "box error" ] [ text "An error has occurred" ]
-         ]
-            ++ viewItems model.items
-        )
+        , viewItems model.items
+        ]
 
 
-viewItems : Items -> List (Html msg)
+viewItems : Items -> Html msg
 viewItems items =
-    List.map viewItem items
+    Html.Keyed.ol [] (List.map viewItem items)
 
 
-viewItem : Item -> Html msg
+viewItem : Item -> ( String, Html msg )
 viewItem item =
-    div [] []
+    ( toString item.id
+    , li []
+        [ article [ class "box card" ]
+            [ h2 [] [ a [ href item.url ] [ text item.title ] ]
+            , div [] [ viewPost item.points item.user item.timeAgo ]
+            ]
+        ]
+    )
+
+
+viewPost : Maybe Int -> Maybe String -> String -> Html msg
+viewPost pt usr timeAgo =
+    let
+        reputation =
+            case ( pt, usr ) of
+                ( Just point, Just user ) ->
+                    toString point ++ " points by " ++ user ++ " "
+
+                _ ->
+                    ""
+    in
+    text (reputation ++ timeAgo)
 
 
 
