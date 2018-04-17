@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+  web:
+    build:
+      context: ./
+    volumes:
+      - yarn:/home/elm/.cache/yarn
+      - ./:/home/elm/app
+    ports:
+      - "3000:3000"
+    restart: on-failure
+
+volumes:
+  yarn:
