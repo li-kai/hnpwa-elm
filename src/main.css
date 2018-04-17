@@ -16,6 +16,15 @@ button {
     border-radius: 3px;
 }
 
+.item-details {
+    padding-right: 0.5rem;
+    border-right: 1px solid gray;
+}
+
+.item-comments {
+    margin-left: 0.5rem;
+}
+
 .error {
     display: inline-block;
     padding: 0.25rem;

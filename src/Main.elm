@@ -31,24 +31,28 @@ type alias Items =
 
 type alias Model =
     { items : Items
+    , page : Int
     , error : String
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { items = [], error = "" }, fetchItems )
+    ( { items = [], page = 1, error = "" }, fetchItems 1 )
 
 
 
 ---- HTTP ----
 
 
-fetchItems : Cmd Msg
-fetchItems =
+fetchItems : Int -> Cmd Msg
+fetchItems page =
     let
+        url =
+            "https://api.hnpwa.com/v0/news/" ++ toString page ++ ".json"
+
         request =
-            Http.get "https://api.hnpwa.com/v0/news/1.json" decodeItems
+            Http.get url decodeItems
     in
     Http.send NewItems request
 
@@ -78,15 +82,15 @@ decodeItem =
 
 
 type Msg
-    = GetItems
+    = GetItems Int
     | NewItems (Result Http.Error Items)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GetItems ->
-            ( model, fetchItems )
+        GetItems pageNum ->
+            ( model, fetchItems pageNum )
 
         NewItems (Ok items) ->
             ( { model | items = items }, Cmd.none )
@@ -102,44 +106,41 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text "Your Elm App is working!" ]
+        [ h1 [] [ text "hnpwa-elm" ]
         , if model.error == "" then
-            text ""
+            Html.Keyed.ol [] (List.map viewItem model.items)
           else
             div [ class "box error" ] [ text "An error has occurred" ]
-        , viewItems model.items
         ]
-
-
-viewItems : Items -> Html msg
-viewItems items =
-    Html.Keyed.ol [] (List.map viewItem items)
 
 
 viewItem : Item -> ( String, Html msg )
 viewItem item =
     ( toString item.id
     , li []
-        [ article [ class "box card" ]
+        [ article [ class "box item" ]
             [ h2 [] [ a [ href item.url ] [ text item.title ] ]
-            , div [] [ viewPost item.points item.user item.timeAgo ]
+            , div [ class "" ]
+                [ viewDetails item
+                , a [ class "item-comments" ] [ text (toString item.comments_count ++ " comments") ]
+                ]
             ]
         ]
     )
 
 
-viewPost : Maybe Int -> Maybe String -> String -> Html msg
-viewPost pt usr timeAgo =
+viewDetails : Item -> Html msg
+viewDetails item =
     let
         reputation =
-            case ( pt, usr ) of
-                ( Just point, Just user ) ->
-                    toString point ++ " points by " ++ user ++ " "
+            case ( item.points, item.user ) of
+                ( Just points, Just user ) ->
+                    toString points ++ " points by " ++ user ++ " "
 
                 _ ->
                     ""
     in
-    text (reputation ++ timeAgo)
+    span [ class "item-details" ] [ text (reputation ++ item.timeAgo) ]
 
 
 
