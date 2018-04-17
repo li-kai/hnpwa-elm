@@ -1,15 +1,25 @@
-body {
-  font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
-  margin: 0;
-  text-align: center;
-  color: #293c4b;
+body, html {
+    height: 100%;
+    min-height: 100%;
 }
 
-h1 {
-  font-size: 30px;
+button {
+    border-radius: 3px;
 }
 
-img {
-  margin: 20px 0;
-  max-width: 200px;
+#root {
+    height: 100%;
+    padding: 0.5rem;
+}
+
+.box {
+    border-radius: 3px;
+}
+
+.error {
+    display: inline-block;
+    padding: 0.25rem;
+    color: #a94442;
+    background-color: #f2dede;
+    border: 1px solid #ebcccc;
 }
