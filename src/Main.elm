@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, href)
+import Html.Attributes exposing (class, href, src)
 import Html.Keyed
 import Http
 import Json.Decode as Decode
@@ -106,31 +106,50 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text "hnpwa-elm" ]
-        , if model.error == "" then
-            Html.Keyed.ol [] (List.map viewItem model.items)
-          else
-            div [ class "box error" ] [ text "An error has occurred" ]
+        [ viewNav
+        , main_ [ class "main" ]
+            [ if model.error == "" then
+                Html.Keyed.ol [ class "items" ] (List.map viewItem model.items)
+              else
+                div [ class "box error" ] [ text "An error has occurred" ]
+            ]
+        ]
+
+
+viewNav : Html msg
+viewNav =
+    nav [ class "nav" ]
+        [ a [ class "nav-logo", href "/" ] [ img [ src "/logo.svg" ] [] ]
+        , a [ class "nav-link", href "/" ] [ text "Home" ]
         ]
 
 
 viewItem : Item -> ( String, Html msg )
 viewItem item =
     ( toString item.id
-    , li []
+    , li [ class "item-container" ]
         [ article [ class "box item" ]
-            [ h2 [] [ a [ href item.url ] [ text item.title ] ]
-            , div [ class "" ]
-                [ viewDetails item
-                , a [ class "item-comments" ] [ text (toString item.comments_count ++ " comments") ]
-                ]
+            [ viewItemHeader item
+            , viewItemDetails item
             ]
         ]
     )
 
 
-viewDetails : Item -> Html msg
-viewDetails item =
+viewItemHeader : Item -> Html msg
+viewItemHeader item =
+    div [ class "item-header" ]
+        [ h2 [ class "item-title" ]
+            [ a [ class "item-url", href item.url ]
+                [ text item.title ]
+            ]
+        , small [ class "item-domain" ]
+            [ text item.domain ]
+        ]
+
+
+viewItemDetails : Item -> Html msg
+viewItemDetails item =
     let
         reputation =
             case ( item.points, item.user ) of
@@ -140,7 +159,10 @@ viewDetails item =
                 _ ->
                     ""
     in
-    span [ class "item-details" ] [ text (reputation ++ item.timeAgo) ]
+    div [ class "item-details" ]
+        [ span [ class "item-poster" ] [ text (reputation ++ item.timeAgo) ]
+        , a [ class "item-comments" ] [ text (toString item.comments_count ++ " comments") ]
+        ]
 
 
 
